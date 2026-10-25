@@ -1,27 +1,12 @@
-# Dashboard eleitoral 2026
+# Dashboard eleitoral 2026 — integração TSE
 
-Aplicação estática para GitHub Pages. Arquivos: `index.html`, `styles.css`, `app.js`.
+## Instalação no repositório `eleicoes2026`
+Envie **todos os arquivos e pastas** deste pacote para a raiz do repositório, substituindo `index.html`, `app.js` e `styles.css`. Preserve a pasta `.github/workflows` e `scripts`.
 
-## Publicação
-Coloque os três arquivos na raiz de um repositório GitHub e ative Settings > Pages > Deploy from branch.
+No GitHub, abra **Actions → Atualizar apuracao TSE → Run workflow** para iniciar a primeira coleta. Em **Settings → Actions → General → Workflow permissions**, habilite **Read and write permissions** se o workflow não conseguir publicar os dados. A rotina roda no máximo a cada cinco minutos, com eventuais atrasos do GitHub.
 
-## Dados e limitações
-A aplicação **não contém endpoint oficial pré-configurado**, pois o esquema e a permissão CORS de uma API de apuração em tempo real não foram validados. Não faz scraping do G1. Pode importar JSON normalizado ou consultar uma URL HTTPS que retorne JSON no formato abaixo, com atualização a cada 20 segundos. O servidor deve permitir CORS. Sem isso, a atualização ao vivo não funcionará. Dados oficiais históricos podem ser obtidos em https://dadosabertos.tse.jus.br/dataset/resultados-2026 , mas CSVs brutos exigem transformação prévia.
+O painel consulta `data/turno1.json` e `data/turno2.json` a cada 20 segundos. A fonte é `resultados.tse.jus.br`, no formato EA20. A atualização de dados **não** é garantida a cada 20 segundos. Não há previsão de resultado eleitoral.
 
-Exemplo **fictício de estrutura** (não são votos reais):
-```json
-{
- "updatedAt":"2026-10-25T17:00:00-03:00",
- "turn":2,
- "places":[
-  {"id":"BR","name":"Brasil","uf":"BR","city":"","electorate":1000,"absent":200,"blank":10,"nullVotes":10,"sectionsTotal":10,"sectionsCount":10,"candidates":[{"id":"13","name":"Candidato A","votes":390},{"id":"22","name":"Candidato B","votes":390}]},
-  {"id":"PE","name":"Pernambuco","uf":"PE","city":"","electorate":100,"absent":20,"blank":1,"nullVotes":1,"sectionsTotal":1,"sectionsCount":1,"candidates":[{"id":"13","name":"Candidato A","votes":40},{"id":"22","name":"Candidato B","votes":38}]},
-  {"id":"PE-RECIFE","name":"Recife","uf":"PE","city":"Recife","electorate":50,"absent":10,"blank":1,"nullVotes":1,"sectionsTotal":1,"sectionsCount":1,"candidates":[{"id":"13","name":"Candidato A","votes":20},{"id":"22","name":"Candidato B","votes":18}]}
- ]
-}
-```
+**Limite atual:** coleta Brasil e as 27 UFs. A seleção de município só funcionará se você importar um JSON normalizado com registros municipais; a coleta automática dos municípios ainda não está implementada. As observações históricas do gráfico começam quando o navegador está aberto. Percentuais de abstenção são referentes às seções totalizadas quando a apuração é parcial.
 
-**Não misture níveis geográficos ao agregar**: se incluir linha BR e linhas UF, o painel usa BR para total nacional; se incluir linha UF e linhas municipais, usa UF para o estado. Identificadores de candidatos devem ser iguais nos dois turnos. Abstenção exige eleitores aptos e ausentes efetivamente conhecidos; não deduza ausentes de dados parciais sem confirmação. O histórico é local, começa quando o painel recebe dados, não recupera consultas anteriores e não é persistido entre navegadores. A atualização de 20 s é uma frequência de consulta, não garantia de novos dados.
-
-## Próxima integração
-É necessário confirmar o esquema oficial de arquivos JSON do TSE e CORS, ou implantar um adaptador confiável que publique JSON normalizado. O CSV consolidado por município do TSE também pode ser transformado em JSON com um script de ETL. O painel não estima vencedor nem inventa valores ausentes.
+A coleta exige GitHub Actions habilitado e pode falhar por indisponibilidade do TSE, limites de acesso ou mudanças no esquema. Em caso de falha, o último arquivo válido permanece no repositório.
